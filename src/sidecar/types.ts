@@ -648,14 +648,14 @@ function getProviderConfiguration(type: Provider, value: ModelProviderConfigurat
 	//		'Ollama': {}
 	//	};
 	//}
-	//if (type === 'openai-compatible') {
-	//	return {
-	//		'OpenAICompatible': {
-	//			'api_key': value.apiKey,
-	//			'api_base': value.apiBase,
-	//		}
-	//	};
-	//}
+	if (type === 'open-ai-compatible') {
+		return {
+			'OpenAICompatible': {
+				'api_key': value.apiKey,
+				'api_base': "http://localhost:1234/v1",
+			}
+		};
+	}
 	//if (type === 'codestory') {
 	//	// if its codestory then we also want to provider the access token over here
 	//	return {
@@ -720,7 +720,7 @@ function getModelProviderConfiguration(providerConfiguration: ProviderSpecificCo
 			},
 		};
 	}
-	if (providerConfiguration.type === 'openai-compatible') {
+	if (providerConfiguration.type === 'open-ai-compatible') {
 		return 'OpenAICompatible';
 	}
 	if (providerConfiguration.type === 'anthropic') {

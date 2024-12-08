@@ -57,6 +57,7 @@ export class PanelProvider implements vscode.WebviewViewProvider {
   private sidecarClient: SideCarClient | undefined;
   private readonly _extensionUri: vscode.Uri;
   private ide: VSCodeIDE;
+  private outputChannel: vscode.OutputChannel;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -64,6 +65,9 @@ export class PanelProvider implements vscode.WebviewViewProvider {
   ) {
     this._extensionUri = context.extensionUri;
     this.ide = new VSCodeIDE();
+
+    this.outputChannel = vscode.window.createOutputChannel('SOTA SWE Logs');
+    this.outputChannel.appendLine('SOTA SWE Extension Initialized.');
 
     // const goToHistory = vscode.commands.registerCommand('sota-swe.go-to-history', () => {
     //   if (this._view) {
@@ -102,7 +106,7 @@ export class PanelProvider implements vscode.WebviewViewProvider {
       }
     });
 
-    // load presets
+    // Load presets
     context.subscriptions.push(openNewTask, goToSettings);
     const presetsArray = (this.context.globalState.get('presets') as Preset[]) || [];
     presetsArray.forEach((preset) => {
@@ -142,6 +146,7 @@ export class PanelProvider implements vscode.WebviewViewProvider {
       }
     }, 1000);
   }
+
 
   private _onMessageFromWebview = new vscode.EventEmitter<ClientRequest>();
   onMessageFromWebview = this._onMessageFromWebview.event;
@@ -776,9 +781,33 @@ export class PanelProvider implements vscode.WebviewViewProvider {
         },
       },
     };
+  
     const sideCarModelConfiguration = getSideCarModelConfiguration(modelSelection);
-    return await sidecarClient.validateModelConfiguration(sideCarModelConfiguration);
+  
+    // **3. Log the configuration being sent**
+    this.outputChannel.appendLine('Sending model configuration to Sidecar:');
+    this.outputChannel.appendLine(JSON.stringify(sideCarModelConfiguration, null, 2));
+  
+    try {
+      const response = await sidecarClient.validateModelConfiguration(sideCarModelConfiguration);
+      
+      // **4. Log the response received from Sidecar**
+      this.outputChannel.appendLine('Received response from Sidecar:');
+      this.outputChannel.appendLine(JSON.stringify(response, null, 2));
+      
+      return response;
+    } catch (error) {
+      // **5. Log the error details**
+      this.outputChannel.appendLine('Validation Error:');
+      this.outputChannel.appendLine(error.message || 'Unknown error');
+      
+      // Also log the error to the console for additional visibility
+      console.error('Validation Error:', error);
+      
+      return { valid: false, error: error.message || 'Unknown error' };
+    }
   }
+  
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(

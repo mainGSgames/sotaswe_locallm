@@ -2,7 +2,7 @@
   "name": "sota-swe",
   "displayName": "CodeStory: SOTA SWE",
   "publisher": "codestoryai",
-  "description": "Codestory's extension for SOTA agentic editing",
+  "description": "Codestory's extension for SOTA agentic editing added LM Studio support on port 1234",
   "version": "0.0.10",
   "private": true,
   "engines": {
